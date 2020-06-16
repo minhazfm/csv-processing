@@ -71,6 +71,20 @@ def convert_csv_data(input_file, output_file, column_name):
 start = time.time()
 print("Starting...")
 
+# https://stackoverflow.com/questions/38252759/compare-csv-values-against-another-csv-and-output-results
+def compare_and_output_results(comparison_file, master_hash_file):
+    with open(master_hash_file) as hashes:
+        hashes = csv.reader(hashes)
+        hashes = set(row[0] for row in hashes)
+
+    with open(comparison_file) as input_file:
+        reader = csv.DictReader(input_file)
+        with open('output-test.csv', 'w') as output_file:
+            writer = csv.DictWriter(output_file, reader.fieldnames)
+            writer.writeheader()
+            writer.writerows(row for row in reader if row['MD5 Hash'] in hashes)
+
+compare_and_output_results('random-sales-records-h.csv', 'hashed-sales-records.csv')
 
 
 end = time.time()
