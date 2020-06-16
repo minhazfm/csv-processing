@@ -59,6 +59,20 @@ def add_column_in_csv(input_file, output_file, transform_row):
             csv_writer.writerow(row)
 
 
+def separate_column_to_csv(input_file, output_file, row_index):
+    # Open the input_file in read mode and output_file in write mode
+    with open(input_file, 'r') as read_obj, \
+            open(output_file, 'w') as write_obj:
+        # Create a csv.reader object from the input file object
+        csv_reader = csv.reader(read_obj, delimiter = ',', lineterminator='\n')
+        # Create a csv.writer object from the output file object
+        csv_writer = csv.writer(write_obj)
+        # Read each row of the input csv file as list
+        for row in csv_reader:
+            # Write the row / list to the output file
+            csv_writer.writerow([row[row_index]])
+
+
 def conversionToMD5(number):
     hash_object = hashlib.md5(str.encode(str(number)))
     return hash_object.hexdigest()
@@ -67,21 +81,30 @@ def conversionToMD5(number):
 header_of_new_col = 'MD5 Hash'
 # default_text = 'Some Text'
 
+
 # Add column with same text in all rows
 # add_column_in_csv(input_file, output_file, lambda row, line_num: row.append(default_text))
+
 
 # Add column to csv by merging contents from first & second column of csv
 # add_column_in_csv(input_file, output_file, lambda row, line_num: row.append(row[0] + '__' + row[1]))
 
+
 # Add the column in csv file with header
+# add_column_in_csv(input_file, output_file, lambda row, line_num: row.append(header_of_new_col) if line_num == 1 else row.append(conversionToMD5(row[6])))
+
+
+# Add the column in csv file with header
+# separate_column_to_csv(input_file, output_file, 6)
+
+
 start = time.time()
 print("Starting...")
 
-add_column_in_csv(input_file, output_file, lambda row, line_num: row.append(header_of_new_col) if line_num == 1 else row.append(conversionToMD5(row[6])))
+separate_column_to_csv(input_file, output_file, 6)
 
 end = time.time()
 print((end - start))
-
 
 
 # with open(File1) as r1, open(output, 'w') as w:
