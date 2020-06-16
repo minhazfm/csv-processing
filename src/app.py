@@ -1,7 +1,8 @@
 import csv
 import hashlib
 import os
-# import pandas as pd
+import pandas as pd
+import random
 
 import time
 
@@ -59,6 +60,33 @@ def add_column_in_csv(input_file, output_file, transform_row):
             csv_writer.writerow(row)
 
 
+def random_data_column_to_csv(input_file, output_file):
+    n = sum(1 for line in open(input_file)) - 1 #number of records in file (excludes header)
+    s = 300000 #desired sample size
+    skip = sorted(random.sample(range(1,n+1),n-s)) #the 0-indexed header will not be included in the skip list
+    df = pd.read_csv(input_file, skiprows=skip)
+    df.to_csv(output_file, index=False)
+
+
+# def random_data_column_to_csv(input_file, output_file):
+#     # Open output_file in write mode
+#     with open(output_file, 'w') as write_obj:
+#         # Create a csv.writer object from the output file object
+#         csv_writer = csv.writer(write_obj)
+#         # Making data frame from csv file  
+#         data = pd.read_csv(input_file)
+#         # Generating one row  
+#         sampleRows = data.sample(frac =.25) 
+#         # Checking if sample is 0.25 times data or not
+#         if (0.25*(len(data))== len(sampleRows)):
+#             print( "Cool")
+#             print(len(data), len(sampleRows))
+#         # Read each row of the input csv file as list
+#         for row in sampleRows:
+#             # Write the row / list to the output file
+#             csv_writer.writerow([row])
+
+
 def separate_column_to_csv(input_file, output_file, row_index):
     # Open the input_file in read mode and output_file in write mode
     with open(input_file, 'r') as read_obj, \
@@ -94,14 +122,24 @@ header_of_new_col = 'MD5 Hash'
 # add_column_in_csv(input_file, output_file, lambda row, line_num: row.append(header_of_new_col) if line_num == 1 else row.append(conversionToMD5(row[6])))
 
 
-# Add the column in csv file with header
+# Separate column in csv to new csv file
 # separate_column_to_csv(input_file, output_file, 6)
+
+
+# Create MD5 hash in separate column
+# input_file_test = os.path.expanduser("~/Documents/SMPL/csv-processing/src/1.5mil-sales-records-new.csv")
+# root_test, ext_test = os.path.splitext(input_file_test)
+# output_file_test = root_test + '-test.csv'
+
+# add_column_in_csv(input_file_test, output_file_test, lambda row, line_num: row.append('MD5 Hash') if line_num == 1 else row.append(conversionToMD5(row[0])))
+
+
 
 
 start = time.time()
 print("Starting...")
 
-separate_column_to_csv(input_file, output_file, 6)
+random_data_column_to_csv(os.path.expanduser("~/Documents/SMPL/csv-processing/src/1.5mil-sales-records-new.csv"), os.path.expanduser("~/Documents/SMPL/csv-processing/src/1.5mil-sales-records-random.csv"))
 
 end = time.time()
 print((end - start))
