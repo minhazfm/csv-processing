@@ -5,6 +5,8 @@ import os
 import pandas as pd
 import time
 
+from random import randint
+
 # 1. Get list of random data
 # 2. Convert to MD5
 # 3. Compare with hashed list, print out matching emails
@@ -46,6 +48,20 @@ def column_to_csv(input_file, output_file, row_index):
             csv_writer.writerow([row[row_index]])
 
 
+# https://stackoverflow.com/questions/38252759/compare-csv-values-against-another-csv-and-output-results
+def compare_and_output_results(comparison_file, master_hash_file):
+    with open(master_hash_file) as hashes:
+        hashes = csv.reader(hashes)
+        hashes = set(row[0] for row in hashes)
+
+    with open(comparison_file) as input_file:
+        reader = csv.DictReader(input_file)
+        with open('output-test.csv', 'w') as output_file:
+            writer = csv.DictWriter(output_file, reader.fieldnames)
+            writer.writeheader()
+            writer.writerows(row for row in reader if row['MD5 Hash'] in hashes)
+
+
 # Conversion to md5
 def conversionToMD5(number):
     hash_object = hashlib.md5(str.encode(str(number)))
@@ -57,6 +73,14 @@ def convert_csv_data(input_file, output_file, column_name):
     df = pd.read_csv(input_file)
     df[column_name] = df[column_name].map(conversionToMD5)
     df.to_csv(output_file, index=False)
+
+
+# Random number generator to csv
+def random_number_generator_to_csv(output_file, count):
+    with open(output_file, 'w') as write_obj:
+        csv_writer = csv.writer(write_obj)
+        for _ in range(count):
+            csv_writer.writerow([randint(100000000, 999999999)])
 
 
 # Created big, hashed records to test against
@@ -71,21 +95,18 @@ def convert_csv_data(input_file, output_file, column_name):
 start = time.time()
 print("Starting...")
 
-# https://stackoverflow.com/questions/38252759/compare-csv-values-against-another-csv-and-output-results
-def compare_and_output_results(comparison_file, master_hash_file):
-    with open(master_hash_file) as hashes:
-        hashes = csv.reader(hashes)
-        hashes = set(row[0] for row in hashes)
+# This test worked
+# compare_and_output_results('random-sales-records-h.csv', 'hashed-sales-records.csv')
 
-    with open(comparison_file) as input_file:
-        reader = csv.DictReader(input_file)
-        with open('output-test.csv', 'w') as output_file:
-            writer = csv.DictWriter(output_file, reader.fieldnames)
-            writer.writeheader()
-            writer.writerows(row for row in reader if row['MD5 Hash'] in hashes)
 
-compare_and_output_results('random-sales-records-h.csv', 'hashed-sales-records.csv')
+# Doing random generation, then adding hashed column
+# random_number_generator_to_csv('really-random-sales-records.csv', 200000)
+# add_column_in_csv('really-random-sales-records.csv', 'really-random-sales-records-h.csv', lambda row, line_num: row.append('MD5 Hash') if line_num == 1 else row.append(conversionToMD5(row[0])))
 
+
+compare_and_output_results('really-random-sales-records-h.csv', 'hashed-sales-records.csv')
+
+# Final calculation comes out to: 2.01 seconds
 
 end = time.time()
 print((end - start))
